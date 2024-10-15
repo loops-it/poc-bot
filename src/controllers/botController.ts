@@ -6,8 +6,9 @@ import path from "path";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-let vectorStoreID = '';
+let vectorStoreID = "";
 let uploadedDocuments = [];
+let currentThreadID = "";
 
 export const handleQuestionResponse = async (req: Request, res: Response) => {
   const userQuestion = req.body.question;
@@ -23,7 +24,11 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Uploaded file must be a PDF." });
       }
 
-      const tempFilePath = path.join(__dirname, 'uploads', receivedFile.originalname);
+      const tempFilePath = path.join(
+        __dirname,
+        "uploads",
+        receivedFile.originalname
+      );
       await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
 
       if (tempFilePath) {
@@ -31,18 +36,18 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
           file: fs.createReadStream(tempFilePath),
           purpose: "assistants",
         });
-  
+
         uploadedDocuments.push(document.id);
         if (uploadedDocuments.length > 2) {
           uploadedDocuments.shift();
         }
-  
+
         await fs.promises.unlink(tempFilePath);
         console.log("Uploaded documents in if:", uploadedDocuments);
       }
     }
     console.log("Uploaded documents:", uploadedDocuments);
-    if (!assistantID){
+    if (!assistantID) {
       const assistant = await openai.beta.assistants.create({
         name: "KodeTech Assistant",
         instructions: `
@@ -56,51 +61,77 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
     `,
         model: "gpt-4o-mini",
         tools: [{ type: "file_search" }],
-        
       });
       assistantID = assistant.id;
-    }else {
+    } else {
       console.log("Reusing existing Assistant:", assistantID);
     }
-    
 
     if (!vectorStoreID) {
-        console.log("Creating new vector store...");
-        let vectorStore = await openai.beta.vectorStores.create({
-          name: "Helper Docs",
-        });
-        vectorStoreID = vectorStore.id; 
-      } else {
-        console.log("Reusing existing vector store:", vectorStoreID);
-      }
-
-     await openai.beta.assistants.update(assistantID, {
-        tool_resources: { file_search: { vector_store_ids: [vectorStoreID] } },
+      console.log("Creating new vector store...");
+      let vectorStore = await openai.beta.vectorStores.create({
+        name: "Helper Docs",
+        expires_after: {
+          anchor: "last_active_at",
+          days: 1,
+        },
+        chunking_strategy: {
+          type: 'static',
+          static: {
+            max_chunk_size_tokens: 300,
+            chunk_overlap_tokens: 100
+          }
+        }
       });
+      vectorStoreID = vectorStore.id;
+    } else {
+      console.log("Reusing existing vector store:", vectorStoreID);
+    }
 
-    const thread = await openai.beta.threads.create({
+    await openai.beta.assistants.update(assistantID, {
+      tool_resources: { 
+        file_search: { 
+          vector_store_ids: [vectorStoreID], 
+        }
+      },
+    });
+
+    if (!currentThreadID) {
+      const thread = await openai.beta.threads.create({
         messages: [
           {
             role: "user",
             content: userQuestion,
-            attachments: uploadedDocuments.map(fileId => ({
+            attachments: uploadedDocuments.map((fileId) => ({
               file_id: fileId,
               tools: [{ type: "file_search" }],
             })),
           },
         ],
       });
-  
-      console.log("Thread tool resources:", thread.tool_resources?.file_search);
-  
 
-    const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
-        assistant_id: assistantID,
+      currentThreadID = thread.id;
+      console.log("Created new thread:", currentThreadID);
+    } else {
+      console.log("Reusing existing thread:", currentThreadID);
+
+      await openai.beta.threads.messages.create(currentThreadID, {
+        role: "user",
+        content: userQuestion,
+        attachments: uploadedDocuments.map((fileId) => ({
+          file_id: fileId,
+          tools: [{ type: "file_search" }],
+        })),
       });
-  
-      const messages = await openai.beta.threads.messages.list(thread.id, {
-        run_id: run.id,
-      });
+    }
+
+    const run = await openai.beta.threads.runs.createAndPoll(currentThreadID, {
+      assistant_id: assistantID,
+    });
+
+    const messages = await openai.beta.threads.messages.list(currentThreadID, {
+      run_id: run.id,
+    });
 
     const message = messages.data.pop()!;
     let latestMessageContent = "";
@@ -130,7 +161,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
     res.json({
       message: latestMessageContent,
       citations: citations.join("\n"),
-      threadId: thread.id,
+      threadId: currentThreadID,
     });
   } catch (error) {
     console.error("Error with OpenAI API:", error);
