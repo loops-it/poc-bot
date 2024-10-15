@@ -160,7 +160,7 @@
   padding: 0px;
   background-color: #fff;
   border-radius: 25px;
-  /* height: 350px; */
+  height: 350px;
   overflow: auto;
   position: relative;
   font-family: "Poppins", sans-serif;
@@ -300,6 +300,7 @@
 
   #response {
     width: 100%;
+    height: calc(100svh - 220px) !important;
     /* height: calc(100svh - 220px) !important; */
   }
 
