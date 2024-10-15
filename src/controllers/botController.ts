@@ -8,6 +8,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const isProduction = process.env.NODE_ENV === "production";
 const uploadsDir = path.resolve(isProduction ? "dist/uploads" : "src/uploads");
 
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
