@@ -3,6 +3,8 @@ import OpenAI from "openai";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
+import tmp from "tmp";
+
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -24,16 +26,17 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Uploaded file must be a PDF." });
       }
 
-      const tempFilePath = path.join(
-        __dirname,
-        "uploads",
-        receivedFile.originalname
-      );
-      await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
-
-      if (tempFilePath) {
+      // const tempFilePath = path.join(
+      //   __dirname,
+      //   "uploads",
+      //   receivedFile.originalname
+      // );
+      const tempFile = tmp.fileSync({ postfix: ".pdf" });
+      // await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
+      await fs.promises.writeFile(tempFile.name, receivedFile.buffer);
+      if (tempFile) {
         document = await openai.files.create({
-          file: fs.createReadStream(tempFilePath),
+          file: fs.createReadStream(tempFile.name),
           purpose: "assistants",
         });
 
@@ -42,7 +45,8 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
           uploadedDocuments.shift();
         }
 
-        await fs.promises.unlink(tempFilePath);
+        tempFile.removeCallback();
+        // await fs.promises.unlink(tempFile);
         console.log("Uploaded documents in if:", uploadedDocuments);
       }
     }
@@ -77,7 +81,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         },
         chunking_strategy: {
           type: 'static',
-          static: {
+           static: {
             max_chunk_size_tokens: 300,
             chunk_overlap_tokens: 100
           }
