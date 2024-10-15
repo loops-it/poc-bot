@@ -11,8 +11,6 @@ const botController_1 = require("../controllers/botController");
 const handleCleanUp_1 = require("../controllers/handleCleanUp");
 const deleteAllFiles_1 = require("../controllers/deleteAllFiles");
 const deleteAllVectorStores_1 = require("../controllers/deleteAllVectorStores");
-// const upload = multer({ storage: multer.memoryStorage() });
-// const upload = multer({ dest: 'src/uploads' });
 const router = express_1.default.Router();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),

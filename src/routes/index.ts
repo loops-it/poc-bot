@@ -7,9 +7,6 @@ import { handleCleanUp } from '../controllers/handleCleanUp';
 import { deleteAllFiles } from '../controllers/deleteAllFiles';
 import { deleteAllVectorStores } from '../controllers/deleteAllVectorStores';
 
-
-// const upload = multer({ storage: multer.memoryStorage() });
-// const upload = multer({ dest: 'src/uploads' });
 const router = express.Router();
 const upload = multer({
     storage: multer.memoryStorage(),

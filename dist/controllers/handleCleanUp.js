@@ -38,7 +38,7 @@ const handleCleanUp = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 console.log(`Deleted document ${documentId}: `, fileResponse);
             }
         }
-        res.status(400).json({ error: "Cleanup successful" });
+        res.status(200).json({ error: "Cleanup successful" });
     }
     catch (error) {
         console.error("Error cleaning up:", error);
