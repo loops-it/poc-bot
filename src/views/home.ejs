@@ -163,6 +163,9 @@
         chatHistory.push({ sender: 'typing', text: '' });
         updateChatUI();
 
+        document.getElementById('userQuestion').value = '';
+    fileInput.value = '';
+
         fetch('/question-response', {
           method: 'POST',
           body: formData,
@@ -173,8 +176,8 @@
             chatHistory.push({ sender: 'bot', text: data.message });
             updateChatUI();
 
-            document.getElementById('userQuestion').value = '';
-            fileInput.value = '';
+            // document.getElementById('userQuestion').value = '';
+            // fileInput.value = '';
           })
           .catch(error => {
             document.getElementById('response').innerHTML += `<p>Error submitting question: ${error.message}</p>`;
