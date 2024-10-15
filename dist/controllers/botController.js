@@ -126,8 +126,8 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
         }
         const vectorStoreFiles = yield openai.beta.vectorStores.files.list(vectorStoreID);
-        console.log("files in vector store: ", vectorStoreFiles);
-        console.log("Thread messages:", JSON.stringify(vectorStoreFiles.data, null, 2));
+        // console.log("files in vector store: ",vectorStoreFiles.data);
+        console.log("files in vector store:", JSON.stringify(vectorStoreFiles.data, null, 2));
         const run = yield openai.beta.threads.runs.createAndPoll(currentThreadID, {
             assistant_id: assistantID,
         });

@@ -160,7 +160,8 @@
   padding: 0px;
   background-color: #fff;
   border-radius: 25px;
-  height: 350px;
+  min-height: 350px;
+  max-height: calc(100vh - 230px);
   overflow: auto;
   position: relative;
   font-family: "Poppins", sans-serif;

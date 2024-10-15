@@ -40,7 +40,7 @@ export const deleteAllVectorStores = async (req: Request, res: Response) => {
       return res.status(200).json({ message: "No files to delete" });
     }
 
-    // await deleteVSByIds(fileIds);
+    await deleteVSByIds(fileIds);
 
     return res.status(200).json({ message: "All files deleted successfully" });
   } catch (error) {

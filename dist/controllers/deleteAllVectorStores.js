@@ -49,7 +49,7 @@ const deleteAllVectorStores = (req, res) => __awaiter(void 0, void 0, void 0, fu
         if (fileIds.length === 0) {
             return res.status(200).json({ message: "No files to delete" });
         }
-        // await deleteVSByIds(fileIds);
+        yield (0, exports.deleteVSByIds)(fileIds);
         return res.status(200).json({ message: "All files deleted successfully" });
     }
     catch (error) {

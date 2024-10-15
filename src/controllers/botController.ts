@@ -132,8 +132,8 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
     const vectorStoreFiles = await openai.beta.vectorStores.files.list(
       vectorStoreID
     );
-    console.log("files in vector store: ",vectorStoreFiles);
-    console.log("Thread messages:", JSON.stringify(vectorStoreFiles.data, null, 2));
+    // console.log("files in vector store: ",vectorStoreFiles.data);
+    console.log("files in vector store:", JSON.stringify(vectorStoreFiles.data, null, 2));
     const run = await openai.beta.threads.runs.createAndPoll(currentThreadID, {
       assistant_id: assistantID,
     });

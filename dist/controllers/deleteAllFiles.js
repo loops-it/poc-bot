@@ -25,7 +25,7 @@ const deleteAllFiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
         if (fileIds.length === 0) {
             return res.status(200).json({ message: "No files to delete" });
         }
-        // await deleteFilesByIds(fileIds);
+        yield (0, utility_1.deleteFilesByIds)(fileIds);
         return res.status(200).json({ message: "All files deleted successfully" });
     }
     catch (error) {
