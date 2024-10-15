@@ -12,17 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findLatestAssistantMessage = exports.sendMessageToThread = exports.createEmptyThread = exports.createFriendlyAssistant = exports.retrieveFile = exports.listFiles = exports.deleteFilesByIds = exports.processPdfFile = exports.getOrCreateVectorStore = void 0;
+exports.findLatestAssistantMessage = exports.retrieveFile = exports.listFiles = exports.deleteFilesByIds = exports.getOrCreateVectorStore = void 0;
 const openai_1 = __importDefault(require("openai"));
 require("dotenv/config");
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const pdf_parse_1 = __importDefault(require("pdf-parse"));
-const isProduction = process.env.NODE_ENV === "production";
-const uploadsDir = path_1.default.resolve(isProduction ? "dist/uploads" : "src/uploads");
-if (!fs_1.default.existsSync(uploadsDir)) {
-    fs_1.default.mkdirSync(uploadsDir, { recursive: true });
-}
+// const isProduction = process.env.NODE_ENV === "production";
+// const uploadsDir = path.resolve(isProduction ? "dist/uploads" : "src/uploads");
+// if (!fs.existsSync(uploadsDir)) {
+//   fs.mkdirSync(uploadsDir, { recursive: true });
+// }
 const openai = new openai_1.default({ apiKey: process.env.OPENAI_API_KEY });
 let vectorStoreId = null;
 // Function to create or retrieve the existing vector store
@@ -54,35 +51,33 @@ exports.getOrCreateVectorStore = getOrCreateVectorStore;
 //     console.log("Added file to vector store:", myVectorStoreFile);
 //     // const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId);
 //   };
-const processPdfFile = (filePath, vectorStore) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const pdfData = yield fs_1.default.promises.readFile(filePath);
-        const pdfText = yield (0, pdf_parse_1.default)(pdfData);
-        const jsonlFilePath = filePath.replace(/\.pdf$/, ".jsonl");
-        const jsonlContent = `${JSON.stringify({ text: pdfText.text })}\n`;
-        yield fs_1.default.promises.writeFile(jsonlFilePath, jsonlContent);
-        const jsonlStream = fs_1.default.createReadStream(jsonlFilePath);
-        const openaiFile = yield openai.files.create({
-            file: jsonlStream,
-            purpose: "assistants",
-        });
-        console.log("Uploaded to OpenAI:", openaiFile);
-        //   const myVectorStoreFile = await openai.beta.vectorStores.files.create("vs_35Xg5aRa2C22EQYXnnaMRu2w", {
-        //     file_id: openaiFile.id,
-        //   });
-        //   console.log("Added file to vector store:", myVectorStoreFile);
-        //   const vectorStoreFiles = await openai.beta.vectorStores.files.list(
-        //     "vs_35Xg5aRa2C22EQYXnnaMRu2w"
-        //   );
-        //   console.log("vector store file list: ",vectorStoreFiles);
-        return { uploadedFileID: openaiFile.id };
-    }
-    catch (error) {
-        console.error("Error processing PDF:", error);
-        throw new Error("Error processing the PDF file.");
-    }
-});
-exports.processPdfFile = processPdfFile;
+// export const processPdfFile = async (filePath: string, vectorStore: string | null) => {
+//   try {
+//     const pdfData = await fs.promises.readFile(filePath);
+//     const pdfText = await pdf(pdfData);
+//     const jsonlFilePath = filePath.replace(/\.pdf$/, ".jsonl");
+//     const jsonlContent = `${JSON.stringify({ text: pdfText.text })}\n`;
+//     await fs.promises.writeFile(jsonlFilePath, jsonlContent);
+//     const jsonlStream = fs.createReadStream(jsonlFilePath);
+//     const openaiFile = await openai.files.create({
+//       file: jsonlStream,
+//       purpose: "assistants",
+//     });
+//     console.log("Uploaded to OpenAI:", openaiFile);
+//   const myVectorStoreFile = await openai.beta.vectorStores.files.create("vs_35Xg5aRa2C22EQYXnnaMRu2w", {
+//     file_id: openaiFile.id,
+//   });
+//   console.log("Added file to vector store:", myVectorStoreFile);
+//   const vectorStoreFiles = await openai.beta.vectorStores.files.list(
+//     "vs_35Xg5aRa2C22EQYXnnaMRu2w"
+//   );
+//   console.log("vector store file list: ",vectorStoreFiles);
+//     return { uploadedFileID: openaiFile.id};
+//   } catch (error) {
+//     console.error("Error processing PDF:", error);
+//     throw new Error("Error processing the PDF file.");
+//   }
+// };
 // delete given file IDs
 const deleteFilesByIds = (fileIds) => __awaiter(void 0, void 0, void 0, function* () {
     for (const fileId of fileIds) {
@@ -124,74 +119,74 @@ const retrieveFile = (fileId) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.retrieveFile = retrieveFile;
 // create assistant
-const createFriendlyAssistant = (vectorStore) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (!vectorStore) {
-            console.log("No Vector Store provided, creating or fetching one...");
-            vectorStore = yield (0, exports.getOrCreateVectorStore)();
-        }
-        const myAssistant = yield openai.beta.assistants.create({
-            instructions: "You are a friendly assistant named 'KodeTech Assistant' here to help answer user questions based on the provided documents. Please be helpful and approachable. Do not give answers based on public documents, if you cannot find the answer just say 'sorry.. context not provided.'",
-            name: "KodeTech Assistant",
-            tools: [{ type: "file_search" }],
-            model: "gpt-4o-mini",
-        });
-        console.log("Assistant created successfully:", myAssistant);
-        return myAssistant.id;
-    }
-    catch (error) {
-        console.error("Error creating assistant:", error);
-        throw new Error("Failed to create Assistant.");
-    }
-});
-exports.createFriendlyAssistant = createFriendlyAssistant;
+// export const createFriendlyAssistant = async (vectorStore: string | null) => {
+//     try {
+//         if (!vectorStore) {
+//             console.log("No Vector Store provided, creating or fetching one...");
+//             vectorStore = await getOrCreateVectorStore();
+//         }
+//         const myAssistant = await openai.beta.assistants.create({
+//             instructions: "You are a friendly assistant named 'KodeTech Assistant' here to help answer user questions based on the provided documents. Please be helpful and approachable. Do not give answers based on public documents, if you cannot find the answer just say 'sorry.. context not provided.'",
+//             name: "KodeTech Assistant",
+//             tools: [{ type: "file_search" }],
+//             model: "gpt-4o-mini",
+//         });
+//         console.log("Assistant created successfully:", myAssistant);
+//         return myAssistant.id;
+//     } catch (error) {
+//         console.error("Error creating assistant:", error);
+//         throw new Error("Failed to create Assistant.");
+//     }
+// };
 // step 3
 // create a empty thread
 let threadId = null;
-const createEmptyThread = (vectorStore) => __awaiter(void 0, void 0, void 0, function* () {
-    if (threadId) {
-        console.log("Using existing thread:", threadId);
-        return threadId;
-    }
-    if (!vectorStore) {
-        console.log("No Vector Store provided, creating or fetching one...");
-        vectorStore = yield (0, exports.getOrCreateVectorStore)();
-    }
-    try {
-        const emptyThread = yield openai.beta.threads.create({
-            tool_resources: {
-                file_search: {
-                    vector_store_ids: [vectorStore],
-                },
-            },
-        });
-        threadId = emptyThread.id;
-        console.log("Created new thread:", threadId);
-        return threadId;
-    }
-    catch (error) {
-        console.error("Error creating thread:", error);
-        throw new Error("Failed to create thread.");
-    }
-});
-exports.createEmptyThread = createEmptyThread;
+// export const createEmptyThread = async (vectorStore: string | null): Promise<string> => {
+//     if (threadId) {
+//         console.log("Using existing thread:", threadId);
+//         return threadId;
+//     }
+//     if (!vectorStore) {
+//         console.log("No Vector Store provided, creating or fetching one...");
+//         vectorStore = await getOrCreateVectorStore();
+//     }
+//     try {
+//         const emptyThread = await openai.beta.threads.create({
+//             tool_resources: {
+//                 file_search: {
+//                     vector_store_ids: [vectorStore],
+//                 },
+//             },
+//         });
+//         threadId = emptyThread.id;
+//         console.log("Created new thread:", threadId);
+//         return threadId;
+//     } catch (error) {
+//         console.error("Error creating thread:", error);
+//         throw new Error("Failed to create thread.");
+//     }
+// };
 // add message to the thread
-const sendMessageToThread = (messageContent, vectorStore) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const currentThreadId = yield (0, exports.createEmptyThread)(vectorStore);
-        const myMessage = yield openai.beta.threads.messages.create(currentThreadId, {
-            role: "user",
-            content: messageContent,
-        });
-        console.log("Message sent to thread:", myMessage);
-        return { message_Id: myMessage.id, threadId: currentThreadId };
-    }
-    catch (error) {
-        console.error("Error sending message to thread:", error);
-        throw new Error("Failed to send message to the thread.");
-    }
-});
-exports.sendMessageToThread = sendMessageToThread;
+// export const sendMessageToThread = async (
+//     messageContent: string,
+//     vectorStore: string | null,
+// ) => {
+//     try {
+//         const currentThreadId = await createEmptyThread(vectorStore);
+//         const myMessage = await openai.beta.threads.messages.create(
+//             currentThreadId,
+//             {
+//                 role: "user",
+//                 content: messageContent,
+//             }
+//         );
+//         console.log("Message sent to thread:", myMessage);
+//         return { message_Id: myMessage.id, threadId: currentThreadId };
+//     } catch (error) {
+//         console.error("Error sending message to thread:", error);
+//         throw new Error("Failed to send message to the thread.");
+//     }
+// };
 // export const updateVectorStoreWithNewFiles = async () => {
 //     try {
 //         const newFileIds = await listFiles();
