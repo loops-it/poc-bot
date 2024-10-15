@@ -42,7 +42,8 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       }
     }
     console.log("Uploaded documents:", uploadedDocuments);
-    const assistant = await openai.beta.assistants.create({
+    if (!assistantID){
+      const assistant = await openai.beta.assistants.create({
         name: "KodeTech Assistant",
         instructions: `
       You are a friendly assistant named 'KodeTech Assistant' here to help answer user questions based on the provided documents. Please be helpful and approachable.
@@ -58,6 +59,10 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         
       });
       assistantID = assistant.id;
+    }else {
+      console.log("Reusing existing Assistant:", assistantID);
+    }
+    
 
     if (!vectorStoreID) {
         console.log("Creating new vector store...");
@@ -69,7 +74,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         console.log("Reusing existing vector store:", vectorStoreID);
       }
 
-     await openai.beta.assistants.update(assistant.id, {
+     await openai.beta.assistants.update(assistantID, {
         tool_resources: { file_search: { vector_store_ids: [vectorStoreID] } },
       });
 
@@ -90,7 +95,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
   
 
     const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
-        assistant_id: assistant.id,
+        assistant_id: assistantID,
       });
   
       const messages = await openai.beta.threads.messages.list(thread.id, {

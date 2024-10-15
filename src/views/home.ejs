@@ -62,10 +62,10 @@
             <i class="bi bi-paperclip"></i>
           </label>
           <input type="file" id="fileUpload" name="file" style="display: none;">
-          
+
           <!-- Chat Input -->
-          <input class="form-control chat-input ms-lg-1" placeholder="Escribe mensaje aquí..." type="text" id="userQuestion"
-            name="question" required></input>
+          <input class="form-control chat-input ms-lg-1" placeholder="Escribe mensaje aquí..." type="text"
+            id="userQuestion" name="question" required></input>
           <button type="submit" class="btn btn-light btn-lg chat-submit-button">
             <i class="bi bi-send-fill"></i>
           </button>
@@ -89,27 +89,27 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
-  
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        let chatHistory = [];
-    
-        function storeChatId(chatId) {
-          localStorage.setItem('chatId', chatId);
-        }
-    
-        function retrieveChatId() {
-          return localStorage.getItem('chatId');
-        }
-    
-        function updateChatUI() {
-          const responseDiv = document.getElementById('response');
-          responseDiv.innerHTML = '';
-    
-          chatHistory.forEach(message => {
-            if (message.sender === 'user') {
-              responseDiv.innerHTML += `
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let chatHistory = [];
+
+      function storeChatId(chatId) {
+        localStorage.setItem('chatId', chatId);
+      }
+
+      function retrieveChatId() {
+        return localStorage.getItem('chatId');
+      }
+
+      function updateChatUI() {
+        const responseDiv = document.getElementById('response');
+        responseDiv.innerHTML = '';
+
+        chatHistory.forEach(message => {
+          if (message.sender === 'user') {
+            responseDiv.innerHTML += `
                 <div class="user-message">
                   <img class="message-image ms-2" src="/user.webp">
                   <div class="messageWrapper">
@@ -117,56 +117,71 @@
                   </div>
                 </div>
               `;
-            } else {
-              responseDiv.innerHTML += `
-                <div class="bot-message">
-                  <img class="message-image" src="/agent.png">
-                  <div class="messageWrapper">
-                    <p class="mb-2">${message.text}</p>
-                  </div>
+          } else if (message.sender === 'bot') {
+            responseDiv.innerHTML += `
+              <div class="bot-message">
+                <img class="message-image" src="/agent.png">
+                <div class="messageWrapper">
+                  <p class="mb-2">${message.text}</p>
                 </div>
-              `;
-            }
-          });
-        }
-    
-        document.getElementById('questionForm').addEventListener('submit', function (event) {
-          event.preventDefault();
-    
-          const userQuestion = document.getElementById('userQuestion').value;
-          const chatId = retrieveChatId();
-          const fileInput = document.getElementById('fileUpload');
-          const file = fileInput.files[0];
-          
-          const formData = new FormData();
-          formData.append('question', userQuestion);
-          formData.append('chatId', chatId);
-          
-          if (file) {
-            formData.append('file', file); 
+              </div>
+            `;
+          } else if (message.sender === 'typing') {
+            responseDiv.innerHTML += `
+              <div class="typing-message">
+                <img class="message-image" src="/agent.png">
+                <div class="messageWrapper">
+                  <p class="mb-2">Typing...</p>
+                </div>
+              </div>
+            `;
           }
-    
-          chatHistory.push({ sender: 'user', text: userQuestion });
-          updateChatUI();
-    
-          fetch('/question-response', {
-            method: 'POST',
-            body: formData, 
-          })
+        });
+        responseDiv.scrollTop = responseDiv.scrollHeight;
+      }
+
+      document.getElementById('questionForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const userQuestion = document.getElementById('userQuestion').value;
+        const chatId = retrieveChatId();
+        const fileInput = document.getElementById('fileUpload');
+        const file = fileInput.files[0];
+
+        const formData = new FormData();
+        formData.append('question', userQuestion);
+        formData.append('chatId', chatId);
+
+        if (file) {
+          formData.append('file', file);
+          chatHistory.push({ sender: 'bot', text: `File added: ${file.name}` });
+        }
+
+        chatHistory.push({ sender: 'user', text: userQuestion });
+        updateChatUI();
+
+        chatHistory.push({ sender: 'typing', text: '' });
+        updateChatUI();
+
+        fetch('/question-response', {
+          method: 'POST',
+          body: formData,
+        })
           .then(response => response.json())
           .then(data => {
+            chatHistory.pop();
             chatHistory.push({ sender: 'bot', text: data.message });
             updateChatUI();
-    
+
             document.getElementById('userQuestion').value = '';
-            fileInput.value = ''; 
+            fileInput.value = '';
           })
           .catch(error => {
             document.getElementById('response').innerHTML += `<p>Error submitting question: ${error.message}</p>`;
           });
-        });
       });
-    </script>
+    });
+  </script>
 
 
 </body>

@@ -2,16 +2,30 @@
   --primary-color: #1c73d4;
 }
 .container {
-  min-width: 360px;
-  position: absolute;
+  min-width: 310px;
+  /* position: absolute;
   bottom: 10px;
-  right: 10px;
+  right: 10px; */
   border: none;
   border-radius: 8px;
   max-width: 600px;
 }
 
 .bot-message {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: #595e62;
+  display: flex;
+  align-items: end;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
+}
+
+.typing-message {
   padding: 10px;
   border-radius: 10px;
   margin-bottom: 10px;
@@ -35,6 +49,21 @@
   font-size: 12px;
   background-color: var(--primary-color);
   color: #fff !important;
+  display: flex;
+  flex-direction: column;
+  /* box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); */
+}
+
+.typing-message .messageWrapper {
+  border: none;
+  border-radius: 8px;
+  max-width: 280px;
+  /* width: max-content; */
+  padding: 10px;
+  border-top-left-radius: 0px;
+  font-size: 12px;
+  background-color: #1c9ad446;
+  color: #333 !important;
   display: flex;
   flex-direction: column;
   /* box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); */
@@ -119,6 +148,11 @@
 
 .background {
   background: transparent;
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  height: 100svh;
+  padding: 10px;
 }
 
 #response {
@@ -246,8 +280,8 @@
 
 @media screen and (max-width: 600px) {
   .background {
-    padding: 5px !important;
-    margin-top: 10px;
+    padding: 10px !important;
+    /* margin-top: 10px; */
     height: 100svh !important;
     overflow: hidden  !important;
   }
@@ -257,7 +291,7 @@
 
   .container {
     width: 100% !important;
-    margin: 10px;
+    /* margin: 10px; */
     position: relative !important;
     border: none;
     border-radius: 8px;

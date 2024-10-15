@@ -18,7 +18,6 @@ require("dotenv/config");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const openai = new openai_1.default({ apiKey: process.env.OPENAI_API_KEY });
-const isProduction = process.env.NODE_ENV === "production";
 let vectorStoreID = '';
 let uploadedDocuments = [];
 const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -26,8 +25,6 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
     const userQuestion = req.body.question;
     const receivedFile = req.file;
     let assistantID = "";
-    let pdfFilePath = "";
-    // let tempFilePath = "";
     let document;
     try {
         if (receivedFile) {
@@ -51,9 +48,10 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         }
         console.log("Uploaded documents:", uploadedDocuments);
-        const assistant = yield openai.beta.assistants.create({
-            name: "KodeTech Assistant",
-            instructions: `
+        if (!assistantID) {
+            const assistant = yield openai.beta.assistants.create({
+                name: "KodeTech Assistant",
+                instructions: `
       You are a friendly assistant named 'KodeTech Assistant' here to help answer user questions based on the provided documents. Please be helpful and approachable.
 
       1. **Document First**: Use the uploaded document related to the current question (e.g., green loans) for your responses.
@@ -62,10 +60,14 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
       4. **Friendly Tone**: Always respond in a friendly, approachable manner, and seek clarification if needed.
       5. **Fallback**: If no relevant information is available from the documents or public information, suggest looking for general information or consulting an expert.
     `,
-            model: "gpt-4o-mini",
-            tools: [{ type: "file_search" }],
-        });
-        assistantID = assistant.id;
+                model: "gpt-4o-mini",
+                tools: [{ type: "file_search" }],
+            });
+            assistantID = assistant.id;
+        }
+        else {
+            console.log("Reusing existing Assistant:", assistantID);
+        }
         if (!vectorStoreID) {
             console.log("Creating new vector store...");
             let vectorStore = yield openai.beta.vectorStores.create({
@@ -76,21 +78,9 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
         else {
             console.log("Reusing existing vector store:", vectorStoreID);
         }
-        yield openai.beta.assistants.update(assistant.id, {
+        yield openai.beta.assistants.update(assistantID, {
             tool_resources: { file_search: { vector_store_ids: [vectorStoreID] } },
         });
-        // if (tempFilePath) {
-        //   document = await openai.files.create({
-        //     file: fs.createReadStream(tempFilePath),
-        //     purpose: "assistants",
-        //   });
-        //   uploadedDocuments.push(document.id);
-        //   if (uploadedDocuments.length > 2) {
-        //     uploadedDocuments.shift();
-        //   }
-        //   console.log("Uploaded documents:", uploadedDocuments);
-        //   await fs.promises.unlink(tempFilePath);
-        // }
         const thread = yield openai.beta.threads.create({
             messages: [
                 {
@@ -105,7 +95,7 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
         });
         console.log("Thread tool resources:", (_a = thread.tool_resources) === null || _a === void 0 ? void 0 : _a.file_search);
         const run = yield openai.beta.threads.runs.createAndPoll(thread.id, {
-            assistant_id: assistant.id,
+            assistant_id: assistantID,
         });
         const messages = yield openai.beta.threads.messages.list(thread.id, {
             run_id: run.id,
