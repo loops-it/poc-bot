@@ -1,0 +1,464 @@
+:root {
+  --primary-color: #1c73d4;
+}
+.container {
+  min-width: 360px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  border: none;
+  border-radius: 8px;
+  max-width: 600px;
+}
+
+.bot-message {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: #595e62;
+  display: flex;
+  align-items: end;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
+}
+
+.bot-message .messageWrapper {
+  border: none;
+  border-radius: 8px;
+  max-width: 280px;
+  /* width: max-content; */
+  padding: 10px;
+  border-top-left-radius: 0px;
+  font-size: 12px;
+  background-color: var(--primary-color);
+  color: #fff !important;
+  display: flex;
+  flex-direction: column;
+  /* box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); */
+}
+
+.user-message {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: #595e62;
+  display: flex;
+  align-items: end;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: end;
+  align-items: end;
+}
+
+.user-message .messageWrapper {
+  border: none;
+  border-radius: 10px;
+  max-width: 250px;
+  width: max-content;
+  padding: 10px;
+  border-bottom-right-radius: 0px;
+  margin-right: 0px;
+  font-size: 12px;
+  background-color: #f4f9ff;
+  display: flex !important;
+  justify-content: end !important;
+  text-align: start !important;
+}
+
+.rate-message {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: #595e62;
+  display: flex;
+  align-items: end;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+}
+
+.rate-message .messageWrapper div {
+  border: none;
+  border-radius: 8px;
+  max-width: 280px;
+  /* width: max-content; */
+  padding: 10px;
+  border-top-left-radius: 0px;
+  font-size: 12px;
+  background-color: var(--primary-color);
+  color: #fff !important;
+  display: flex;
+  flex-direction: column;
+  /* box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); */
+}
+
+.user-message .message-image {
+  /* display: none; */
+}
+
+/* .user-message div p{
+      width: 100%;
+    } */
+.user-message .messageWrapper {
+  padding-right: 10px;
+  text-align: end;
+  align-self: end !important;
+}
+
+.user-message .messageWrapper .botname-message {
+  padding-right: 10px;
+  text-align: end;
+  align-self: end !important;
+}
+
+.background {
+  background: transparent;
+}
+
+#response {
+  width: 100%;
+  padding: 0px;
+  background-color: #fff;
+  border-radius: 25px;
+  height: 350px;
+  overflow: auto;
+  position: relative;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+
+  /* Hide scrollbar for WebKit browsers */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+#response::-webkit-scrollbar {
+  display: none;
+}
+
+.message-image {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  margin-top: 10px;
+  border-radius: 50%;
+}
+
+.chat-submit-button {
+  /* position: absolute; */
+  right: 10px;
+  bottom: 10px;
+  background-color: transparent;
+  border-radius: 100%;
+  color: var(--primary-color);
+  /* color: #BFBFBF; */
+  padding: 10px;
+  font-size: 20px;
+  line-height: 20px;
+  font-family: "Poppins", sans-serif;
+  width: 40px;
+  height: 40px;
+  margin-right: 5px;
+  /* border: solid 1px  var(--primary-color); */
+}
+
+.recordButton {
+  background-color: transparent;
+  border-radius: 100%;
+  color: var(--primary-color);
+  padding: 10px;
+  font-size: 20px;
+  line-height: 20px;
+  font-family: "Poppins", sans-serif;
+  width: 40px;
+  height: 40px;
+}
+.stop-speaking-button {
+  background-color: transparent;
+  border-radius: 100%;
+  color: red !important;
+  padding: 10px;
+  font-size: 20px;
+  line-height: 20px;
+  font-family: "Poppins", sans-serif;
+  width: 40px;
+  height: 40px;
+}
+
+/* .chat-submit-button:hover {
+            background-color: transparent;
+        } */
+
+#questionForm {
+  position: relative;
+  padding: 0px;
+  padding-top: 0px;
+}
+
+.chat-header {
+  background-color: var(--primary-color);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.chat-container {
+  padding: 10px;
+}
+
+.chat-input {
+  line-height: 30px;
+  border-radius: 0px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  padding-right: 45px !important;
+  border: none !important;
+}
+
+.chat-input:focus {
+  outline: none !important;
+  box-shadow: none;
+}
+
+.chat-input::placeholder {
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  color: #696969;
+}
+
+.language-buttons button {
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  border-radius: 15px;
+  background-color: var(--primary-color);
+  border: none;
+  color: #fff;
+  width: 100%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+@media screen and (max-width: 600px) {
+  .background {
+    padding: 5px !important;
+    margin-top: 10px;
+    height: 100svh !important;
+    overflow: hidden  !important;
+  }
+  .full-height {
+    height: 100%;
+  }
+
+  .container {
+    width: 100% !important;
+    margin: 10px;
+    position: relative !important;
+    border: none;
+    border-radius: 8px;
+    /* height: 99vh; */
+  }
+
+  #response {
+    width: 100%;
+    /* height: calc(100svh - 220px) !important; */
+  }
+
+  #questionForm {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    padding: 10px;
+    padding-top: 0px;
+  }
+}
+
+.closeButton {
+  background-color: transparent;
+  border: none;
+  border-radius: 100%;
+  font-size: 16px;
+  line-height: 16px;
+  width: 25px;
+  height: 25px;
+  color: #fff;
+  margin-right: 20px;
+  text-align: center;
+  padding: 0px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes visible {
+  0% {
+    visibility: hidden;
+  }
+
+  100% {
+    visibility: visible;
+  }
+}
+
+.loading {
+  animation: fadeIn 0.5s ease-in-out infinite alternate,
+    visible 0.5s ease-in-out infinite alternate;
+}
+
+.typingmsg-wrapper {
+  background-color: #fff;
+  color: #000;
+}
+
+.typing-msg {
+  color: #000;
+  font-size: 25px;
+  padding: 5px !important;
+}
+
+.error-message {
+  background-color: #2a0e459c;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px !important;
+  margin-top: 10px;
+}
+
+#questionButtons button {
+  margin-bottom: 10px;
+}
+
+#questionButtons li {
+  color: #595e62;
+  font-size: 12px;
+  margin: 10px 0px 0px 0px;
+}
+
+.chatDetails p {
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+}
+
+.chatDetails span {
+  color: #fff;
+  font-weight: 300;
+  font-size: 11px;
+  font-family: "Poppins", sans-serif;
+}
+
+.botname-message {
+  color: #bfbfbf;
+  font-weight: 400;
+  font-size: 10px;
+  font-family: "Poppins", sans-serif;
+}
+
+.quickQuestionButton {
+  background-color: var(--primary-color);
+  border-radius: 5px;
+  border: none;
+  color: #fff;
+  font-weight: 400;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+  text-align: start;
+}
+
+.quickQuestionButton i {
+  font-size: 20px;
+  padding-left: 10px;
+}
+
+.powerdTextBox {
+  background-color: #f7f7f7;
+  border-radius: 4px;
+}
+
+.powerdTextBox p {
+  color: #bfbfbf;
+  font-weight: 300;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+}
+
+.powerdTextBox span {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.liveagentBtn {
+  background-color: #fff;
+  border-radius: 5px;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 400;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+  text-align: center;
+}
+
+.btnNotoClose,
+.btnYesToClose {
+  background-color: var(--primary-color);
+  border-radius: 5px;
+  border: none;
+  color: #fff;
+  font-weight: 400;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+  text-align: center;
+}
+
+.messageSubmitForm {
+}
+
+.star-rating-form {
+  width: 280px;
+  border: solid 1px var(--primary-color);
+}
+
+.rating-icon {
+  color: gold;
+}
+
+.btnRatingView {
+  background-color: #fff;
+  border-radius: 5px;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 400;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.bi-mic-mute-fill {
+  color: red !important;
+}
+
+#questionForm {
+  width: 85%;
+}
