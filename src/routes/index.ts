@@ -1,6 +1,6 @@
 import express from 'express';
 import { home } from '../controllers/indexController';
-import { questionResponse } from '../controllers/questionResponse';
+// import { questionResponse } from '../controllers/questionResponse';
 import multer from 'multer';
 import { handleQuestionResponse } from '../controllers/botController';
 

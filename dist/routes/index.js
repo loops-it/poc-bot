@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const indexController_1 = require("../controllers/indexController");
+// import { questionResponse } from '../controllers/questionResponse';
 const multer_1 = __importDefault(require("multer"));
 const botController_1 = require("../controllers/botController");
 // const upload = multer({ storage: multer.memoryStorage() });

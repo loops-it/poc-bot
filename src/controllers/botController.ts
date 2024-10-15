@@ -5,13 +5,6 @@ import fs from "fs";
 import path from "path";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const isProduction = process.env.NODE_ENV === "production";
-const uploadsDir = path.resolve(isProduction ? "dist/uploads" : "src/uploads");
-
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
 let vectorStoreID = '';
 let uploadedDocuments = [];
@@ -20,29 +13,35 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
   const userQuestion = req.body.question;
   const receivedFile = req.file;
   let assistantID = "";
-  let pdfFilePath = "";
+  let document;
 
   try {
-     if (receivedFile) {
-        console.log("File received:", receivedFile);
-  
-        if (receivedFile.mimetype !== "application/pdf") {
-          return res.status(400).json({ error: "Uploaded file must be a PDF." });
-        }
-  
-        const originalFileName = receivedFile.originalname;
-        const fileExtension = path.extname(originalFileName);
-        const fileNameWithoutExtension = path.basename(originalFileName, fileExtension);
-        const finalFileName = fileExtension === ".pdf" ? originalFileName : fileNameWithoutExtension + ".pdf";
-  
-        pdfFilePath = path.join(uploadsDir, finalFileName);
-        fs.renameSync(receivedFile.path, pdfFilePath);
-  
-        console.log("PDF file saved as:", pdfFilePath);
-      } else {
-        console.log("No file uploaded, proceeding with user question only.");
+    if (receivedFile) {
+      console.log("File received:", receivedFile);
+
+      if (receivedFile.mimetype !== "application/pdf") {
+        return res.status(400).json({ error: "Uploaded file must be a PDF." });
       }
 
+      const tempFilePath = path.join(__dirname, 'uploads', receivedFile.originalname);
+      await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
+
+      if (tempFilePath) {
+        document = await openai.files.create({
+          file: fs.createReadStream(tempFilePath),
+          purpose: "assistants",
+        });
+  
+        uploadedDocuments.push(document.id);
+        if (uploadedDocuments.length > 2) {
+          uploadedDocuments.shift();
+        }
+  
+        await fs.promises.unlink(tempFilePath);
+        console.log("Uploaded documents in if:", uploadedDocuments);
+      }
+    }
+    console.log("Uploaded documents:", uploadedDocuments);
     const assistant = await openai.beta.assistants.create({
         name: "KodeTech Assistant",
         instructions: `
@@ -73,21 +72,6 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
      await openai.beta.assistants.update(assistant.id, {
         tool_resources: { file_search: { vector_store_ids: [vectorStoreID] } },
       });
-
-    let document;
-    if (pdfFilePath) {
-      document = await openai.files.create({
-        file: fs.createReadStream(pdfFilePath),
-        purpose: "assistants",
-      });
-
-      uploadedDocuments.push(document.id);
-      if (uploadedDocuments.length > 2) {
-        uploadedDocuments.shift();
-      }
-      console.log("Uploaded documents:", uploadedDocuments);
-
-    }
 
     const thread = await openai.beta.threads.create({
         messages: [

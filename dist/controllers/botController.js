@@ -19,10 +19,6 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const openai = new openai_1.default({ apiKey: process.env.OPENAI_API_KEY });
 const isProduction = process.env.NODE_ENV === "production";
-const uploadsDir = path_1.default.resolve(isProduction ? "dist/uploads" : "src/uploads");
-if (!fs_1.default.existsSync(uploadsDir)) {
-    fs_1.default.mkdirSync(uploadsDir, { recursive: true });
-}
 let vectorStoreID = '';
 let uploadedDocuments = [];
 const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -31,23 +27,30 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
     const receivedFile = req.file;
     let assistantID = "";
     let pdfFilePath = "";
+    // let tempFilePath = "";
+    let document;
     try {
         if (receivedFile) {
             console.log("File received:", receivedFile);
             if (receivedFile.mimetype !== "application/pdf") {
                 return res.status(400).json({ error: "Uploaded file must be a PDF." });
             }
-            const originalFileName = receivedFile.originalname;
-            const fileExtension = path_1.default.extname(originalFileName);
-            const fileNameWithoutExtension = path_1.default.basename(originalFileName, fileExtension);
-            const finalFileName = fileExtension === ".pdf" ? originalFileName : fileNameWithoutExtension + ".pdf";
-            pdfFilePath = path_1.default.join(uploadsDir, finalFileName);
-            fs_1.default.renameSync(receivedFile.path, pdfFilePath);
-            console.log("PDF file saved as:", pdfFilePath);
+            const tempFilePath = path_1.default.join(__dirname, 'uploads', receivedFile.originalname);
+            yield fs_1.default.promises.writeFile(tempFilePath, receivedFile.buffer);
+            if (tempFilePath) {
+                document = yield openai.files.create({
+                    file: fs_1.default.createReadStream(tempFilePath),
+                    purpose: "assistants",
+                });
+                uploadedDocuments.push(document.id);
+                if (uploadedDocuments.length > 2) {
+                    uploadedDocuments.shift();
+                }
+                yield fs_1.default.promises.unlink(tempFilePath);
+                console.log("Uploaded documents in if:", uploadedDocuments);
+            }
         }
-        else {
-            console.log("No file uploaded, proceeding with user question only.");
-        }
+        console.log("Uploaded documents:", uploadedDocuments);
         const assistant = yield openai.beta.assistants.create({
             name: "KodeTech Assistant",
             instructions: `
@@ -76,18 +79,18 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
         yield openai.beta.assistants.update(assistant.id, {
             tool_resources: { file_search: { vector_store_ids: [vectorStoreID] } },
         });
-        let document;
-        if (pdfFilePath) {
-            document = yield openai.files.create({
-                file: fs_1.default.createReadStream(pdfFilePath),
-                purpose: "assistants",
-            });
-            uploadedDocuments.push(document.id);
-            if (uploadedDocuments.length > 2) {
-                uploadedDocuments.shift();
-            }
-            console.log("Uploaded documents:", uploadedDocuments);
-        }
+        // if (tempFilePath) {
+        //   document = await openai.files.create({
+        //     file: fs.createReadStream(tempFilePath),
+        //     purpose: "assistants",
+        //   });
+        //   uploadedDocuments.push(document.id);
+        //   if (uploadedDocuments.length > 2) {
+        //     uploadedDocuments.shift();
+        //   }
+        //   console.log("Uploaded documents:", uploadedDocuments);
+        //   await fs.promises.unlink(tempFilePath);
+        // }
         const thread = yield openai.beta.threads.create({
             messages: [
                 {
