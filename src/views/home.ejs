@@ -95,12 +95,17 @@
     document.addEventListener('DOMContentLoaded', function () {
       let chatHistory = [];
 
-      function storeChatId(chatId) {
-        localStorage.setItem('chatId', chatId);
+      function storeThreadId(data) {
+        localStorage.setItem('threadId', data.threadId);
+        localStorage.setItem('assistantID', data.assistantID);
+        localStorage.setItem('vectorStoreID', data.vectorStoreID);
       }
 
-      function retrieveChatId() {
-        return localStorage.getItem('chatId');
+      function retrieveThreadId() {
+        const threadID = localStorage.getItem('threadId') || "";
+        const assistantID = localStorage.getItem('assistantID') || "";
+        const vectorStoreID = localStorage.getItem('vectorStoreID') || "";
+        return { threadID: threadID, assistantID: assistantID, vectorStoreID: vectorStoreID }
       }
 
       function updateChatUI() {
@@ -144,13 +149,13 @@
         event.preventDefault();
 
         const userQuestion = document.getElementById('userQuestion').value;
-        const chatId = retrieveChatId();
+        const allId = retrieveThreadId();
         const fileInput = document.getElementById('fileUpload');
         const file = fileInput.files[0];
 
         const formData = new FormData();
         formData.append('question', userQuestion);
-        formData.append('chatId', chatId);
+        formData.append('threadId', allId.threadID);
 
         if (file) {
           formData.append('file', file);
@@ -164,7 +169,7 @@
         updateChatUI();
 
         document.getElementById('userQuestion').value = '';
-    fileInput.value = '';
+        fileInput.value = '';
 
         fetch('/question-response', {
           method: 'POST',
@@ -172,17 +177,42 @@
         })
           .then(response => response.json())
           .then(data => {
+            console.log("Server response:", data);
+
             chatHistory.pop();
             chatHistory.push({ sender: 'bot', text: data.message });
             updateChatUI();
 
-            // document.getElementById('userQuestion').value = '';
-            // fileInput.value = '';
+            if (data) {
+              storeThreadId(data);
+            }
           })
           .catch(error => {
             document.getElementById('response').innerHTML += `<p>Error submitting question: ${error.message}</p>`;
           });
       });
+    });
+  </script>
+
+  <script>
+    window.addEventListener("beforeunload", function (event) {
+      const threadID = localStorage.getItem('threadId');
+      const assistantID = localStorage.getItem('assistantID');
+      const vectorStoreID = localStorage.getItem('vectorStoreID');
+
+      if (threadID) {
+        const payload = {
+          threadID: threadID,
+          assistantID: assistantID,
+          vectorStoreID: vectorStoreID,
+        };
+
+        navigator.sendBeacon('/cleanup-thread', JSON.stringify(payload));
+
+        localStorage.removeItem('threadId');
+        localStorage.removeItem('assistantID');
+        localStorage.removeItem('vectorStoreID');
+      }
     });
   </script>
 

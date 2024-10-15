@@ -26,19 +26,14 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
     const receivedFile = req.file;
     let assistantID = "";
     let document;
+    const threadIdFromRequest = req.body.threadId;
     try {
         if (receivedFile) {
             console.log("File received:", receivedFile);
             if (receivedFile.mimetype !== "application/pdf") {
                 return res.status(400).json({ error: "Uploaded file must be a PDF." });
             }
-            // const tempFilePath = path.join(
-            //   __dirname,
-            //   "uploads",
-            //   receivedFile.originalname
-            // );
             const tempFile = tmp_1.default.fileSync({ postfix: ".pdf" });
-            // await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
             yield fs_1.default.promises.writeFile(tempFile.name, receivedFile.buffer);
             if (tempFile) {
                 document = yield openai.files.create({
@@ -50,7 +45,6 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
                     uploadedDocuments.shift();
                 }
                 tempFile.removeCallback();
-                // await fs.promises.unlink(tempFile);
                 console.log("Uploaded documents in if:", uploadedDocuments);
             }
         }
@@ -103,7 +97,7 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             },
         });
-        if (!currentThreadID) {
+        if (!threadIdFromRequest || threadIdFromRequest === "") {
             const thread = yield openai.beta.threads.create({
                 messages: [
                     {
@@ -120,6 +114,7 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
             console.log("Created new thread:", currentThreadID);
         }
         else {
+            currentThreadID = threadIdFromRequest;
             console.log("Reusing existing thread:", currentThreadID);
             yield openai.beta.threads.messages.create(currentThreadID, {
                 role: "user",
@@ -130,6 +125,9 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
                 })),
             });
         }
+        const vectorStoreFiles = yield openai.beta.vectorStores.files.list(vectorStoreID);
+        console.log("files in vector store: ", vectorStoreFiles);
+        console.log("Thread messages:", JSON.stringify(vectorStoreFiles.data, null, 2));
         const run = yield openai.beta.threads.runs.createAndPoll(currentThreadID, {
             assistant_id: assistantID,
         });
@@ -160,6 +158,8 @@ const handleQuestionResponse = (req, res) => __awaiter(void 0, void 0, void 0, f
             message: latestMessageContent,
             citations: citations.join("\n"),
             threadId: currentThreadID,
+            assistantID: assistantID,
+            vectorStoreID: vectorStoreID,
         });
     }
     catch (error) {

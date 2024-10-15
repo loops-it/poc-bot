@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import OpenAI from "openai";
 import "dotenv/config";
 import fs from "fs";
-import path from "path";
 import tmp from "tmp";
 
 
@@ -17,6 +16,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
   const receivedFile = req.file;
   let assistantID = "";
   let document;
+  const threadIdFromRequest = req.body.threadId;
 
   try {
     if (receivedFile) {
@@ -26,14 +26,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Uploaded file must be a PDF." });
       }
 
-      // const tempFilePath = path.join(
-      //   __dirname,
-      //   "uploads",
-      //   receivedFile.originalname
-      // );
-      
       const tempFile = tmp.fileSync({ postfix: ".pdf" });
-      // await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
       
       await fs.promises.writeFile(tempFile.name, receivedFile.buffer);
       if (tempFile) {
@@ -48,11 +41,13 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
         }
 
         tempFile.removeCallback();
-        // await fs.promises.unlink(tempFile);
         console.log("Uploaded documents in if:", uploadedDocuments);
       }
     }
     console.log("Uploaded documents:", uploadedDocuments);
+
+
+
     if (!assistantID) {
       const assistant = await openai.beta.assistants.create({
         name: "KodeTech Assistant",
@@ -102,7 +97,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       },
     });
 
-    if (!currentThreadID) {
+    if (!threadIdFromRequest || threadIdFromRequest === "") {
       const thread = await openai.beta.threads.create({
         messages: [
           {
@@ -119,6 +114,8 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       currentThreadID = thread.id;
       console.log("Created new thread:", currentThreadID);
     } else {
+
+      currentThreadID = threadIdFromRequest;
       console.log("Reusing existing thread:", currentThreadID);
 
       await openai.beta.threads.messages.create(currentThreadID, {
@@ -131,6 +128,11 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       });
     }
 
+    const vectorStoreFiles = await openai.beta.vectorStores.files.list(
+      vectorStoreID
+    );
+    console.log("files in vector store: ",vectorStoreFiles);
+    console.log("Thread messages:", JSON.stringify(vectorStoreFiles.data, null, 2));
     const run = await openai.beta.threads.runs.createAndPoll(currentThreadID, {
       assistant_id: assistantID,
     });
@@ -168,6 +170,8 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       message: latestMessageContent,
       citations: citations.join("\n"),
       threadId: currentThreadID,
+      assistantID: assistantID,
+      vectorStoreID: vectorStoreID,
     });
   } catch (error) {
     console.error("Error with OpenAI API:", error);
