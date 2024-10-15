@@ -99,14 +99,30 @@
         localStorage.setItem('threadId', data.threadId);
         localStorage.setItem('assistantID', data.assistantID);
         localStorage.setItem('vectorStoreID', data.vectorStoreID);
+        localStorage.setItem('uploadedDocuments', data.uploadedDocuments);
       }
 
       function retrieveThreadId() {
         const threadID = localStorage.getItem('threadId') || "";
         const assistantID = localStorage.getItem('assistantID') || "";
         const vectorStoreID = localStorage.getItem('vectorStoreID') || "";
+        const uploadedDocuments = localStorage.getItem('uploadedDocuments') || "";
         return { threadID: threadID, assistantID: assistantID, vectorStoreID: vectorStoreID }
       }
+
+      function formatBotMessage(text) {
+    let formattedText = text.replace(/\n/g, '<br>');
+
+    formattedText = formattedText.replace(/- (.+)/g, '<li>$1</li>');
+
+    if (formattedText.includes('<li>')) {
+        formattedText = formattedText.replace(/(<li>.+<\/li>)/g, '<ul>$1</ul>');
+    }
+
+    formattedText = formattedText.replace(/### (.+)/g, '<h3>$1</h3>');
+
+    return formattedText;
+}
 
       function updateChatUI() {
         const responseDiv = document.getElementById('response');
@@ -123,11 +139,12 @@
                 </div>
               `;
           } else if (message.sender === 'bot') {
+            const formattedMessage = formatBotMessage(message.text);
             responseDiv.innerHTML += `
               <div class="bot-message">
                 <img class="message-image" src="/agent.png">
                 <div class="messageWrapper">
-                  <p class="mb-2">${message.text}</p>
+                  ${formattedMessage}
                 </div>
               </div>
             `;
@@ -199,12 +216,14 @@
       const threadID = localStorage.getItem('threadId');
       const assistantID = localStorage.getItem('assistantID');
       const vectorStoreID = localStorage.getItem('vectorStoreID');
+      const uploadedDocuments = localStorage.getItem('uploadedDocuments');
 
       if (threadID) {
         const payload = {
           threadID: threadID,
           assistantID: assistantID,
           vectorStoreID: vectorStoreID,
+          uploadedDocuments: uploadedDocuments
         };
 
         navigator.sendBeacon('/cleanup-thread', JSON.stringify(payload));
@@ -212,6 +231,7 @@
         localStorage.removeItem('threadId');
         localStorage.removeItem('assistantID');
         localStorage.removeItem('vectorStoreID');
+        localStorage.removeItem('uploadedDocuments');
       }
     });
   </script>

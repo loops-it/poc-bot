@@ -17,7 +17,8 @@ const openai_1 = __importDefault(require("openai"));
 require("dotenv/config");
 const openai = new openai_1.default({ apiKey: process.env.OPENAI_API_KEY });
 const handleCleanUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { threadID, assistantID, vectorStoreID } = req.body;
+    const { threadID, assistantID, vectorStoreID, uploadedDocuments } = req.body;
+    console.log("Received cleanup request:", { threadID, assistantID, vectorStoreID, uploadedDocuments });
     try {
         if (threadID) {
             const response = yield openai.beta.threads.del(threadID);
@@ -31,7 +32,13 @@ const handleCleanUp = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             const deletedVectorStore = yield openai.beta.vectorStores.del(vectorStoreID);
             console.log("delete vector store: ", deletedVectorStore);
         }
-        res.status(400).json({ error: "No threadId provided" });
+        if (uploadedDocuments && uploadedDocuments.length > 0) {
+            for (const documentId of uploadedDocuments) {
+                const fileResponse = yield openai.files.del(documentId);
+                console.log(`Deleted document ${documentId}: `, fileResponse);
+            }
+        }
+        res.status(400).json({ error: "Cleanup successful" });
     }
     catch (error) {
         console.error("Error cleaning up:", error);

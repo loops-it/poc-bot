@@ -5,8 +5,9 @@ import "dotenv/config";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const handleCleanUp = async (req: Request, res: Response) => {
-  const { threadID, assistantID, vectorStoreID } = req.body;
+  const { threadID, assistantID, vectorStoreID, uploadedDocuments } = req.body;
 
+  console.log("Received cleanup request:", { threadID, assistantID, vectorStoreID, uploadedDocuments });
   try {
     if (threadID) {
       const response = await openai.beta.threads.del(threadID);
@@ -25,7 +26,14 @@ export const handleCleanUp = async (req: Request, res: Response) => {
       console.log("delete vector store: ", deletedVectorStore);
     }
 
-    res.status(400).json({ error: "No threadId provided" });
+    if (uploadedDocuments && uploadedDocuments.length > 0) {
+      for (const documentId of uploadedDocuments) {
+        const fileResponse = await openai.files.del(documentId);
+        console.log(`Deleted document ${documentId}: `, fileResponse);
+      }
+    }
+
+    res.status(400).json({ error: "Cleanup successful" });
   } catch (error) {
     console.error("Error cleaning up:", error);
     res.status(500).json({ error: "Error cleaning up resources" });
