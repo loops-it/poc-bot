@@ -31,6 +31,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       //   "uploads",
       //   receivedFile.originalname
       // );
+      
       const tempFile = tmp.fileSync({ postfix: ".pdf" });
       // await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
       
