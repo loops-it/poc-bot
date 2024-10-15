@@ -6,8 +6,11 @@ import { handleQuestionResponse } from '../controllers/botController';
 
 
 // const upload = multer({ storage: multer.memoryStorage() });
-const upload = multer({ dest: 'src/uploads' });
+// const upload = multer({ dest: 'src/uploads' });
 const router = express.Router();
+const upload = multer({
+    storage: multer.memoryStorage(),
+  });
 
 router.get('/', home);
 router.post('/question-response', upload.single('file'), handleQuestionResponse);
