@@ -89,6 +89,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
     } else {
       console.log("Reusing existing vector store:", vectorStoreID);
     }
+    
 
     await openai.beta.assistants.update(assistantID, {
       tool_resources: { 

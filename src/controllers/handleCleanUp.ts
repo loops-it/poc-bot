@@ -33,7 +33,7 @@ export const handleCleanUp = async (req: Request, res: Response) => {
       }
     }
 
-    res.status(400).json({ error: "Cleanup successful" });
+    res.status(200).json({ error: "Cleanup successful" });
   } catch (error) {
     console.error("Error cleaning up:", error);
     res.status(500).json({ error: "Error cleaning up resources" });

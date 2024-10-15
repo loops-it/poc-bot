@@ -34,7 +34,7 @@
       </div>
       <button class="closeButton" onclick="chatCloseByUser()">
         <i class="bi bi-x-lg"></i>
-    </button>
+      </button>
     </div>
 
     <div class="d-flex chat-container" style="flex-grow: 1;">
@@ -122,7 +122,7 @@
           formattedText = formattedText.replace(/(<li>.+<\/li>)/g, '<ul>$1</ul>');
         }
 
-        formattedText = formattedText.replace(/### (.+)/g, '<h3>$1</h3>');
+        formattedText = formattedText.replace(/### (.+)/g, '<p>$1</p>');
 
         return formattedText;
       }
@@ -215,80 +215,78 @@
   </script>
 
   <script>
-    function handleCleanup() {
-        const threadID = localStorage.getItem('threadId');
-        const assistantID = localStorage.getItem('assistantID');
-        const vectorStoreID = localStorage.getItem('vectorStoreID');
-        // const uploadedDocuments = JSON.parse(localStorage.getItem('uploadedDocuments')) || [];
+    async function handleCleanup() {
+      const threadID = localStorage.getItem('threadId');
+      const assistantID = localStorage.getItem('assistantID');
+      const vectorStoreID = localStorage.getItem('vectorStoreID');
+      // const uploadedDocuments = JSON.parse(localStorage.getItem('uploadedDocuments')) || [];
 
-        if (threadID) {
-            const payload = {
-                threadID: threadID,
-                assistantID: assistantID,
-                vectorStoreID: vectorStoreID,
-                // uploadedDocuments: uploadedDocuments
-            };
+      if (threadID) {
+        const payload = {
+          threadID: threadID,
+          assistantID: assistantID,
+          vectorStoreID: vectorStoreID,
+          // uploadedDocuments: uploadedDocuments
+        };
 
-            console.log("Payload for cleanup:", payload);
-            navigator.sendBeacon('/cleanup-thread', JSON.stringify(payload));
+        console.log("Payload for cleanup:", payload);
 
-            localStorage.removeItem('threadId');
-            localStorage.removeItem('assistantID');
-            localStorage.removeItem('vectorStoreID');
-            // localStorage.removeItem('uploadedDocuments');
+        try {
+          const response = await fetch('/cleanup-thread', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            console.error("Cleanup request failed:", response.statusText);
+          } else {
+            console.log("Cleanup request succeeded");
+          }
+
+          localStorage.removeItem('threadId');
+          localStorage.removeItem('assistantID');
+          localStorage.removeItem('vectorStoreID');
+          // localStorage.removeItem('uploadedDocuments');
+        } catch (error) {
+          console.error("Error during cleanup request:", error);
         }
+      }
     }
 
     function chatCloseByUser() {
-        handleCleanup(); 
+      handleCleanup();
     }
   </script>
 
-<script>
-  window.addEventListener("beforeunload", function (event) {
-    const threadID = localStorage.getItem('threadId');
-    const assistantID = localStorage.getItem('assistantID');
-    const vectorStoreID = localStorage.getItem('vectorStoreID');
-    const uploadedDocuments = JSON.parse(localStorage.getItem('uploadedDocuments')) || [];
+  <script>
+    window.addEventListener("beforeunload", function (event) {
+      const threadID = localStorage.getItem('threadId');
+      const assistantID = localStorage.getItem('assistantID');
+      const vectorStoreID = localStorage.getItem('vectorStoreID');
+      // const uploadedDocuments = JSON.parse(localStorage.getItem('uploadedDocuments')) || [];
 
-    if (threadID) {
-      const payload = {
-        threadID: threadID,
-        assistantID: assistantID,
-        vectorStoreID: vectorStoreID,
-        uploadedDocuments: uploadedDocuments
-      };
 
-      console.log("Payload for cleanup:", payload);
+      if (threadID) {
+        const payload = {
+          threadID: threadID,
+          assistantID: assistantID,
+          vectorStoreID: vectorStoreID,
+          uploadedDocuments: uploadedDocuments
+        };
 
-      // Use fetch API to send cleanup request
-      fetch('/cleanup-thread', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-      .then(response => {
-        if (!response.ok) {
-          console.error('Error in cleanup request:', response.statusText);
-        } else {
-          console.log('Cleanup request sent successfully.');
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-      });
+        console.log("Payload for cleanup:", payload);
+        navigator.sendBeacon('/cleanup-thread', JSON.stringify(payload));
 
-      // Clean up local storage
-      localStorage.removeItem('threadId');
-      localStorage.removeItem('assistantID');
-      localStorage.removeItem('vectorStoreID');
-      localStorage.removeItem('uploadedDocuments');
-    }
-  });
-</script>
-
+        localStorage.removeItem('threadId');
+        localStorage.removeItem('assistantID');
+        localStorage.removeItem('vectorStoreID');
+        // localStorage.removeItem('uploadedDocuments');
+      }
+    });
+  </script>
 
 
 </body>
