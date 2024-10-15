@@ -33,6 +33,7 @@ export const handleQuestionResponse = async (req: Request, res: Response) => {
       // );
       const tempFile = tmp.fileSync({ postfix: ".pdf" });
       // await fs.promises.writeFile(tempFilePath, receivedFile.buffer);
+      
       await fs.promises.writeFile(tempFile.name, receivedFile.buffer);
       if (tempFile) {
         document = await openai.files.create({
